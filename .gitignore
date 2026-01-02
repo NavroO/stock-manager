@@ -3,3 +3,4 @@ dist
 .env
 db.json
 coverage
+.DS_Store
