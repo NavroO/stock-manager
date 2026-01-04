@@ -16,12 +16,35 @@ export const POLISH_HOLIDAYS_MMDD = [
 
 export type PolishHolidayMMDD = (typeof POLISH_HOLIDAYS_MMDD)[number];
 
+export const LOCATION_MULTIPLIERS: Record<string, number> = {
+  Europe: 1.15,
+  Asia: 0.95,
+};
+
+export const VOLUME_DISCOUNTS = [
+  { minUnits: 50, rate: 0.3 },
+  { minUnits: 10, rate: 0.2 },
+  { minUnits: 5, rate: 0.1 },
+];
+
+export const BLACK_FRIDAY_DISCOUNT = 0.25;
+export const HOLIDAY_DISCOUNT_RATE = 0.15;
+export const HOLIDAY_TARGET_CATEGORIES = ["Electronics", "Books"];
+
 export interface CreateOrderInput {
   customerId: string;
   products: Array<{
     productId: string;
     quantity: number;
   }>;
+}
+
+export interface CreateProductInput {
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
 }
 
 export interface Product {
