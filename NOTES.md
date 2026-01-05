@@ -30,6 +30,12 @@
 - Audit logging
 - Database migrations
 - Rate limiting
+- Containerization (Docker, docker-compose)
+- Caching layer (Redis for hot data)
+- Message queue for async operations
+- Health check endpoints
+- Metrics and monitoring (Prometheus, Grafana)
+- Proper logging infrastructure (Winston, ELK stack)
 
 ## Technical Decisions
 
@@ -37,7 +43,38 @@
 
 **Why:** Lightweight JSON file storage, perfect for prototype/interview task. Zero setup required.
 
-**Tradeoffs:** Not suitable for production (no transactions, poor concurrency, file-based). Would use PostgreSQL for real system.
+**Tradeoffs:** Not suitable for production (no transactions, poor concurrency, file-based).
+
+**Production alternative:** PostgreSQL with:
+
+- Proper ACID transactions
+- Row-level locking for stock management
+- Connection pooling (pg-pool)
+- Migrations (Knex/TypeORM)
+- Replication for read scaling
+- Redis for caching frequently accessed products
+
+### CQRS Implementation
+
+**Approach:** Folder-based separation without event sourcing.
+
+- `commands/` - Write operations with business logic
+- `queries/` - Read operations (simple data retrieval)
+- Commands update stock and calculate discounts
+- Queries just fetch and return data
+
+**Why this level:** Full CQRS with separate databases/event sourcing would be overengineering for this scope. Current approach demonstrates pattern understanding while keeping complexity reasonable.
+
+### Project Structure
+
+```
+commands/queries → Business operations
+routes → HTTP layer (validation, status codes)
+helpers/utils.ts → Pure functions for discounts
+helpers/types.ts → Shared types and constants
+```
+
+**Why:** Clear separation of concerns. Business logic testable without HTTP layer. Routes stay thin.
 
 ## Business Logic
 
@@ -104,11 +141,32 @@ Located in `commands/orders.ts → buildOrderProducts()`:
 ### Not Covered (Production Requirements)
 
 - Concurrent request handling
-- Database connection failures
+- Database connection failures and retry logic
 - File system errors (LowDB writes)
 - Large dataset performance
 - Memory leaks in long-running process
 - Malformed JSON handling in database file
+- **Infrastructure:**
+  - Docker containerization
+  - Redis for caching and session management
+  - PostgreSQL with connection pooling
+  - Message queue (RabbitMQ/Kafka) for order processing
+  - API Gateway and load balancing
+  - CI/CD pipeline
+  - Environment-specific configs (dev/staging/prod)
+  - Database backups and disaster recovery
+- **Observability:**
+  - Structured logging (Winston + ELK)
+  - Distributed tracing (OpenTelemetry)
+  - APM (Application Performance Monitoring)
+  - Error tracking (Sentry)
+- **Security:**
+  - JWT authentication
+  - Rate limiting per user/IP
+  - Input sanitization beyond Joi
+  - HTTPS/TLS
+  - Secrets management (Vault)
+  - SQL injection prevention (irrelevant for LowDB, critical for real DB)
 
 ## Trade-offs & Alternatives
 
